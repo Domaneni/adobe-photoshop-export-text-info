@@ -2,6 +2,7 @@ Adobe Photoshop - export text info
 ==================================
 
 Adobe Photoshop script for export data from text layers.
+
 Exported data
 -------------
 
