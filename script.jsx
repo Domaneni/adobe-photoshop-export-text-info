@@ -90,7 +90,7 @@ function main(){
 /* Get path of layer trought folders */
 function getParentPath(parent){
    if(app.activeDocument.name == parent.name){
-      return parent.name;
+      return "";
    } else {
       return  getParentPath(parent.parent) + "/" + parent.name;
    }
@@ -110,7 +110,7 @@ function makeInvisibleByIndex(index) {
 }
 
 function getTextInfo(layer) {
-        var layerPath = "" + getParentPath(layer.parent);
+        var layerPath = getParentPath(layer.parent);
         var tI = layer.textItem;
         if(tI.contents != "") {
             var fontName = "";
