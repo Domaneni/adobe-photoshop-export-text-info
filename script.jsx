@@ -1,14 +1,14 @@
 ﻿app.displayDialogs = DialogModes.NO;
 
-/* Define parametres */
+/* =================== Define parametres =================== */
 var csvPath = "C:\\Temp\\";
 var a = new File(csvPath+app.activeDocument.name.substr(0, app.activeDocument.name.length-4) +".csv");
 
-/* Call main function */
+/* =================== Call main function =================== */
 main();
 a.close();
 
-
+/* ====================== Functions ======================= */
 function getLayerVisibilityByIndex( idx ) {
            var ref = new ActionReference();
            ref.putProperty( charIDToTypeID("Prpr") , charIDToTypeID( "Vsbl" ));
@@ -55,7 +55,7 @@ function getAllLayersByIndex(){
 };
 
 function makeActiveByIndex( idx, visible ){
-    var desc = new ActionDescriptor();
+   var desc = new ActionDescriptor();
       var ref = new ActionReference();
       ref.putIndex(charIDToTypeID( "Lyr " ), idx)
       desc.putReference( charIDToTypeID( "null" ), ref );      
@@ -64,36 +64,26 @@ function makeActiveByIndex( idx, visible ){
 };
 
 function main(){
-   var invObj = new Array();
-   var textLayers = new Array();
    // create new file for saving text info
    a.open('w');    
    // column names
-   a.writeln("\"Name\",\"Path\",\"Font\",\"Size\",\"Style\",\"Letter_Spacing\",\"Line_Height\",\"Color\",\"Horizontal_Scale\",\"Vertical_Scale\",\"Underline\",\"Index\"");
+   a.writeln("\"Name\",\"Path\",\"Font\",\"Size\",\"Style\",\"Letter_Spacing\",\"Line_Height\",\"Color\",\"Horizontal_Scale\",\"Vertical_Scale\",\"Underline\"");
     
    var groups = getAllLayersByIndex();
-    
-   var arrayItr = 0;
-   var textLayerIndex = 0;
-   // cyklus projede odspodu vsechny vrstvy a otevre tak jednotlive slozky
-   // take se zde zjistuje viditelnost vrstvy aby se pak mohly zneviditelnit
+   
+   // Go through all layers
    for(var i = 0; i < groups.length ; i++) {
             var visible = getLayerVisibilityByIndex(groups[i]);
             makeActiveByIndex( groups[i], true );
-            if(!visible){
-                invObj[arrayItr++] = groups[i];
+            var layer = app.activeDocument.activeLayer;
+            
+            if(layer.kind == LayerKind.TEXT){
+                getTextInfo(layer);
             }
-            if(app.activeDocument.activeLayer.kind == LayerKind.TEXT){
-                textLayers[groups[i]] = (++textLayerIndex);
+            
+            if (!visible) {
+                makeInvisibleByIndex(groups[i]); 
             }
-   }
-   for(var i = groups.length-1; i >= 0 ; i--) {
-      makeActiveByIndex( groups[i], true );
-      var layer = app.activeDocument.activeLayer;
-
-      if(layer.kind == LayerKind.TEXT) {
-         getTextInfo(layer, "", textLayers[groups[i]]);
-      }
    }
 }
 
@@ -106,9 +96,21 @@ function getParentPath(parent){
    }
 }
 
+function makeInvisibleByIndex(index) {
+   var idHd = charIDToTypeID( "Hd  " );
+   var desc54 = new ActionDescriptor();
+   var idnull = charIDToTypeID( "null" );
+   var list2 = new ActionList();
+   var ref49 = new ActionReference();
+   var idLyr = charIDToTypeID( "Lyr " );
+   ref49.putIndex( idLyr, index );
+   list2.putReference( ref49 );
+   desc54.putList( idnull, list2 );
+   executeAction( idHd, desc54, DialogModes.NO );
+}
 
-function getTextInfo(layer, prevPath, textLayerIndex) {
-        var layerPath = prevPath + getParentPath(layer.parent);
+function getTextInfo(layer) {
+        var layerPath = "" + getParentPath(layer.parent);
         var tI = layer.textItem;
         if(tI.contents != "") {
             var fontName = "";
@@ -144,6 +146,6 @@ function getTextInfo(layer, prevPath, textLayerIndex) {
             var horizontal_scale =  tI.horizontalScale;
             var vertical_scale =  tI.verticalScale;
             a.writeln("\""+name+"\","+"\""+layerPath+"\","+"\""+fontName+"\","+"\""+size+"\","+"\""+style+"\","+"\""+letter_spacing+"\","+"\""+line_height+"\","
-                        +"\""+color+"\","+"\""+horizontal_scale+"\","+"\""+vertical_scale+"\","+"\""+underline+"\","+"\""+textLayerIndex+"\"");
+                        +"\""+color+"\","+"\""+horizontal_scale+"\","+"\""+vertical_scale+"\","+"\""+underline+"\"");
         }
 }
